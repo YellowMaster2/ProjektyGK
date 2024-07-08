@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Zadanie 2</title>
+    <style>
+      body {
+        background-color: #f1f3f5;
+        -webkit-user-select: none; /* turn off text selection / Webkit */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE 10 */
+        -o-user-select: none; /* Opera */
+        user-select: none;
+      }
+      canvas {
+        background-color: white;
+        display: block;
+      }
+      #canvasholder {
+        border: 2px solid black;
+        float: left; /* This makes the border exactly fit the canvas. */
+      }
+    </style>
+    <script>
+      "use strict"; // gives improved error-checking in scripts.
+
+      var canvas; // The canvas element on which we will draw.
+      var graphics; // A 2D graphics context for drawing on the canvas.
+
+      function randomColorString() {
+        var r = Math.floor(256 * Math.random());
+        var g = Math.floor(256 * Math.random());
+        var b = Math.floor(256 * Math.random());
+        return "rgb(" + r + "," + g + "," + b + ")";
+      }
+
+      function installMouseHandler() {
+        var dragging = false; // set to true when a drag action is in progress.
+        var startX, startY; // coordinates of mouse at start of drag.
+        var prevX, prevY; // previous mouse position during a drag.
+
+        var colorChoice; // Integer code for the selected color in the "colorChoide"
+        // popup menu.  The value is assigned in doMouseDown.
+        var figureChoice;
+
+        function doMouseDown(evt) {
+          if (dragging) {
+            return; // if a drag is in progress, don't start another.
+          }
+          if (evt.button != 0) {
+            return; // don't respond unless the button is the main (left) mouse button.
+          }
+          var x, y; // mouse position in canvas coordinates
+          var r = canvas.getBoundingClientRect();
+          x = Math.round(evt.clientX - r.left); // translate mouse position from screen coords to canvas coords.
+          y = Math.round(evt.clientY - r.top); // round to integer values; some browsers would give non-integers.
+          dragging = true; // (this won't be the case for all mousedowns in all programs)
+          if (dragging) {
+            startX = prevX = x;
+            startY = prevY = y;
+            document.addEventListener("mousemove", doMouseMove, false);
+            document.addEventListener("mouseup", doMouseUp, false);
+          }
+
+          figureChoice = Number(document.getElementById("figureChoice").value);
+          colorChoice = Number(document.getElementById("colorChoice").value);
+        }
+
+        function doMouseMove(evt) {
+          if (!dragging) {
+            return; // (shouldn't be possible)
+          }
+          var x, y; // mouse position in canvas coordinates
+          var r = canvas.getBoundingClientRect();
+          x = Math.round(evt.clientX - r.left);
+          y = Math.round(evt.clientY - r.top);
+
+          if (Math.abs(x - prevX) + Math.abs(y - prevY) < 3) {
+            return; // don't draw figures too close together
+          }
+
+          switch (colorChoice) {
+            case 0:
+              graphics.fillStyle = randomColorString();
+              break;
+            case 1:
+              graphics.fillStyle = "red";
+              break;
+            case 2:
+              graphics.fillStyle = "green";
+              break;
+            case 3:
+              graphics.fillStyle = "blue";
+              break;
+            case 4:
+              graphics.fillStyle = "pink";
+              break;
+          }
+
+          if (figureChoice == 1) {
+            // Draw 11-sided polygon
+            drawHendecagon(x, y, 50); // 50 is the radius of the hendecagon
+          } else if (figureChoice == 0) {
+            graphics.fillRect(x - 20, y - 20, 40, 40);
+            graphics.strokeRect(x - 20, y - 20, 40, 40);
+          }
+
+          prevX = x;
+          prevY = y;
+        }
+
+        function doMouseUp(evt) {
+          if (!dragging) {
+            return;
+          }
+          dragging = false;
+          document.removeEventListener("mousemove", doMouseMove, false);
+          document.removeEventListener("mouseup", doMouseUp, false);
+        }
+
+        canvas.addEventListener("mousedown", doMouseDown, false);
+
+        function drawHendecagon(centerX, centerY, radius) {
+          const sides = 11;
+          const step = (2 * Math.PI) / sides;
+          graphics.beginPath();
+          for (let i = 0; i <= sides; i++) {
+            const x = centerX + radius * Math.cos(i * step);
+            const y = centerY + radius * Math.sin(i * step);
+            if (i === 0) graphics.moveTo(x, y);
+            else graphics.lineTo(x, y);
+          }
+          graphics.closePath();
+          graphics.fill();
+          graphics.stroke();
+        }
+      }
+
+      function addGraphicsContextExtras(graphics) {
+        // Your existing addGraphicsContextExtras implementation
+      }
+
+      function init() {
+        try {
+          canvas = document.getElementById("canvas");
+          graphics = canvas.getContext("2d");
+        } catch (e) {
+          document.getElementById("canvasholder").innerHTML =
+            "<p>Canvas graphics is not supported.<br>" +
+            "An error occurred while initializing graphics.</p>";
+          return;
+        }
+        addGraphicsContextExtras(graphics);
+        installMouseHandler();
+        graphics.fillStyle = "white";
+        graphics.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function Clear() {
+        graphics.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    </script>
+  </head>
+  <body onload="init()">
+    <h2>Zadanie 2</h2>
+    <noscript>
+      <p>JavaScript is required to use this page.</p>
+    </noscript>
+    <p>
+      <b>Figura:</b>
+      <select id="figureChoice">
+        <option value="0">Kwadrat</option>
+        <option value="1">11-kąt</option>
+      </select>
+    </p>
+    <p>
+      <b>Kolor:</b>
+      <select id="colorChoice">
+        <option value="0">Random</option>
+        <option value="1">Red</option>
+        <option value="2">Green</option>
+        <option value="3">Blue</option>
+        <option value="4">Pink</option>
+      </select>
+      <button onclick="Clear()">Clear</button>
+    </p>
+    <div id="canvasholder">
+      <canvas id="canvas" width="800" height="600">
+        Canvas not supported.
+      </canvas>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Unlit Cube and Helix Example</title>
+    <!-- <script src="https://math.hws.edu/graphicsbook/source/webgl-utils/glsim.js"></script> -->
+    <script src="glsim.js"></script>
+    <script>
+      let rotateX = 15; // rotations of cube about the axes
+      let rotateY = -15;
+      let rotateZ = 0;
+      let objectNumber = 1; // Start with object 1 (Helix)
+
+      function drawHelix() {
+        const turns = 7;
+        const pointsPerTurn = 100;
+        const height = 2; // Total height of the helix
+        const radius = 0.5; // Radius of the helix
+        let heightStep = height / (turns * pointsPerTurn); // Height step per point
+
+        glColor3f(0, 1, 0); // Set drawing color to green
+        glBegin(GL_POINTS);
+        for (let i = 0; i < turns * pointsPerTurn; i++) {
+          let angle = (i / pointsPerTurn) * 2 * Math.PI;
+          let x = radius * Math.cos(angle);
+          let y = radius * Math.sin(angle);
+          let z = i * heightStep - height / 2; // Center helix along Z axis
+          glVertex3f(x, y, z);
+        }
+        glEnd();
+      }
+
+      function drawPyramid(baseVertices) {
+        // Assume baseVertices is 7 for a heptagon base
+        glColor3f(0, 1, 0); // Set drawing color to green
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(0, 0, 1); // Apex of the pyramid
+        for (let i = 0; i <= baseVertices; i++) {
+          let angle = (i / baseVertices) * 2 * Math.PI;
+          let x = Math.cos(angle);
+          let y = Math.sin(angle);
+          glVertex3f(x, y, 0); // Base circle points
+        }
+        glEnd();
+      }
+
+      function display() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+        glRotatef(rotateX, 1, 0, 0);
+        glRotatef(rotateY, 0, 1, 0);
+        glRotatef(rotateZ, 0, 0, 1);
+
+        if (objectNumber === 1) {
+          drawHelix();
+        } else if (objectNumber === 2) {
+          drawPyramid(7);
+        }
+      }
+
+      function initGL() {
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(-2, 2, -2, 2, -2, 2);
+        glMatrixMode(GL_MODELVIEW);
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0, 0, 0, 1);
+      }
+
+      function doKeyDown(evt) {
+        switch (evt.keyCode) {
+          case 49: // Number 1
+            objectNumber = 1;
+            break;
+          case 50: // Number 2
+            objectNumber = 2;
+            break;
+          case 37: // left
+            rotateY -= 15;
+            break;
+          case 39: // right
+            rotateY += 15;
+            break;
+          case 40: // down
+            rotateX += 15;
+            break;
+          case 38: // up
+            rotateX -= 15;
+            break;
+          case 33: // page up
+            rotateZ += 15;
+            break;
+          case 34: // page down
+            rotateZ -= 15;
+            break;
+          case 36: // home
+            rotateX = 15;
+            rotateY = -15;
+            rotateZ = 0;
+            break;
+        }
+        display();
+      }
+
+      function init() {
+        glsimUse("glcanvas");
+        document.onkeydown = doKeyDown;
+        initGL();
+        display();
+      }
+    </script>
+  </head>
+  <body onload="init()">
+    <h3>OpenGL 1.1 Objects: Helix and Pyramid</h3>
+    <p>
+      (Rotate using arrow keys, Page Up, Page Down, and Home keys. Switch
+      objects with 1 and 2.)
+    </p>
+    <canvas id="glcanvas" width="400" height="400"></canvas>
+  </body>
+</html>

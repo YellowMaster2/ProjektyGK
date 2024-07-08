@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+        }
+    
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+</head>
+<body>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const light = new THREE.PointLight(0xffffff, 1, 300);
+        light.position.set(-5, -0.5, 0.5);
+        camera.add(light);
+        scene.add(camera);
+
+        const material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+
+        const whitePawn = new THREE.Group();
+
+        const baseGeometry = new THREE.CylinderGeometry(0.35, 0.35, 0.1, 100);
+        const base = new THREE.Mesh(baseGeometry, material);
+        whitePawn.add(base);
+        base.position.y = 0.2;
+
+        const pawnGeometry_1 = new THREE.CylinderGeometry(0.25, 0.3, 0.7, 100);
+        const pawnPart_1 = new THREE.Mesh(pawnGeometry_1, material);
+        pawnPart_1.position.y = 0.75;
+        whitePawn.add(pawnPart_1);
+
+        const pawnGeometry_2 = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 100);
+        const pawnPart_2 = new THREE.Mesh(pawnGeometry_2, material);
+        pawnPart_2.position.y = 1.45;
+        whitePawn.add(pawnPart_2);
+
+        const pawnGeometry_3 = new THREE.CylinderGeometry(0.4, 0.3, 0.5, 100);
+        const pawnPart_3 = new THREE.Mesh(pawnGeometry_3, material);
+        pawnPart_3.position.y = 1.75;
+        whitePawn.add(pawnPart_3);
+
+        const pawnGeometry_4 = new THREE.CylinderGeometry(0.35, 0.35, 0.1, 100);
+        const pawnPart_4 = new THREE.Mesh(pawnGeometry_4, material);
+        pawnPart_4.position.y = 2.25;
+        whitePawn.add(pawnPart_4);
+
+        const pawnGeometry_5 = new THREE.CylinderGeometry(0.25, 0.25, 0.1, 100);
+        const pawnPart_5 = new THREE.Mesh(pawnGeometry_5, material);
+        pawnPart_5.position.y = 2.4;
+        whitePawn.add(pawnPart_5);
+
+        whitePawn.position.set(0, 0, 0);
+        scene.add(whitePawn);
+
+        camera.position.z = 5;
+
+        const animate = function () {
+            requestAnimationFrame(animate);
+            whitePawn.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        };
+
+        animate();
+    </script>
+</body>
+</html>
