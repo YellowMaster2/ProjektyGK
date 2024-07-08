@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CPSC 424, Lab 2, Zadanie 2</title>
+<style>
+    body {
+        background-color: #DDDDDD;
+    }
+    canvas {
+        background-color: white;
+        display: block;
+    }
+    #canvasholder {
+        border: 2px solid black;
+        float: left;
+    }
+</style>
+<script>
+    "use strict";
+
+    var canvas;
+    var graphics;
+
+    function clearCanvas() {
+        graphics.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function addColorOption() {
+        var select = document.getElementById("colorSelect");
+        var option = document.createElement("option");
+        option.value = '#' + Math.floor(Math.random()*16777215).toString(16);
+        option.text = "Nowy kolor";
+        select.add(option);
+    }
+
+    function drawPolygon(x, y) {
+        var size = 50;
+        graphics.fillStyle = "black";
+        graphics.beginPath();
+        graphics.moveTo(x, y - size);
+        graphics.lineTo(x + size, y);
+        graphics.lineTo(x, y + size);
+        graphics.lineTo(x - size, y);
+        graphics.closePath();
+        graphics.fill();
+    }
+
+    function doMouseMove(event) {
+        var x = event.clientX - canvas.getBoundingClientRect().left;
+        var y = event.clientY - canvas.getBoundingClientRect().top;
+        var select = document.getElementById("colorSelect");
+        var selectedColor = select.options[select.selectedIndex].value;
+
+        if (selectedColor === "newColor") {
+            graphics.fillStyle = "orange";
+            drawPolygon(x, y);
+        } else {
+            graphics.fillStyle = selectedColor;
+            graphics.fillRect(x - 10, y - 10, 20, 20);
+        }
+    }
+
+    function init() {
+        try {
+            canvas = document.getElementById("canvas");
+            graphics = canvas.getContext("2d");
+        } catch (e) {
+            document.getElementById("canvasholder").innerHTML =
+                "Wykresy graficzne są nieobsługiwane.<br>" +
+                "Wystąpił błąd podczas inicjalizacji grafiki.";
+        }
+
+        canvas.addEventListener("mousemove", doMouseMove);
+    }
+</script>
+</head>
+<body onload="init()">
+<h2>CPSC 424, Lab 2, Zadanie 2</h2>
+<noscript>
+    <p>JavaScript jest wymagany do korzystania z tej strony.</p>
+</noscript>
+<div id="canvasholder">
+<canvas id="canvas" width="600" height="600">
+    Wykresy graficzne są nieobsługiwane.
+</canvas>
+</div>
+<br>
+<button onclick="clearCanvas()">Wyczyść</button>
+<button onclick="addColorOption()">Dodaj nowy kolor</button>
+<select id="colorSelect">
+    <option value="black">Czarny</option>
+    <option value="red">Czerwony</option>
+    <option value="blue">Niebieski</option>
+</select>
+</body>
+</html>
+

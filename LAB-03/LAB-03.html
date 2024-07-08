@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lever Drawing</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <script>
+
+    function drawTriangle(x, y, width, height, color) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const startX = x * canvas.width / 100;
+        const startY = y * canvas.height / 100;
+
+        const triangleWidth = width * canvas.width / 100;
+        const triangleHeight = height * canvas.height / 100;
+
+        const vertex1X = startX;
+        const vertex1Y = startY - triangleHeight / 2;
+
+        const vertex2X = startX - triangleWidth / 2;
+        const vertex2Y = startY + triangleHeight / 2;
+
+        const vertex3X = startX + triangleWidth / 2;
+        const vertex3Y = startY + triangleHeight / 2;
+
+        ctx.beginPath();
+        ctx.moveTo(vertex1X, vertex1Y);
+        ctx.lineTo(vertex2X, vertex2Y);
+        ctx.lineTo(vertex3X, vertex3Y);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+
+    function drawLine(x, y, length, line_size, angle) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const startX = x * canvas.width / 100;
+        const startY = y * canvas.height / 100;
+
+        const lineWidth = line_size * canvas.width / 100;
+
+        const radians = angle * Math.PI / 180;
+
+        const endX = startX + length * Math.cos(radians);
+        const endY = startY + length * Math.sin(radians);
+
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = 'red';
+        ctx.stroke();
+    }
+
+    function drawCircle(x, y, radius, slice_count, rotation_speed) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const startX = x * canvas.width / 100;
+        const startY = y * canvas.height / 100;
+
+        const sliceAngle = (2 * Math.PI) / slice_count;
+
+        const rotationAngle = (rotation_speed * Math.PI) / 180;
+
+        ctx.beginPath();
+        ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+
+        for (let i = 0; i < slice_count; i++) {
+            const startAngle = i * sliceAngle + rotationAngle;
+            const endAngle = (i + 1) * sliceAngle + rotationAngle;
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.arc(startX, startY, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.stroke();
+        }
+    }
+
+    function animate() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // ----------------------------- Rysowanie figur
+        // Figura 1
+
+        drawCircle(8, 15, 40, 10, rotationAngle);
+        drawCircle(31, 26, 40, 10, rotationAngle);
+        drawLine(8, 15, 200, 1, 20);
+        drawTriangle(20, 30, 5, 20, 'purple');
+
+
+        // Figura 2
+        drawCircle(28.5,60,50,10, rotationAngle);
+        drawCircle(51,71,50,10, rotationAngle);
+        drawTriangle(40, 80, 7, 28, 'blue');
+        drawLine(40, 65, 7, 25, 110);
+
+        // Figura 3
+        drawCircle(81,26,40,10,rotationAngle);
+        drawCircle(58.5,15,40,10,rotationAngle);
+        drawTriangle(70, 30, 5, 20, 'green');
+        drawLine(70,20,7,25,110);
+        
+
+        rotationAngle += rotationSpeed;
+
+        requestAnimationFrame(animate);
+    }
+
+    let rotationAngle = 0;
+    let rotationSpeed = 1;
+
+    animate();
+
+    </script>
+</body>
+</html>

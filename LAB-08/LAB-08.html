@@ -1,364 +1,385 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Texture From Color Buffer</title>
-    <link rel="stylesheet" href="../demo.css" />
-    <script src="../script/demo-core.js"></script>
-    <script src="../script/glsim.js"></script>
-    <script src="../script/teapot-model-IFS.js"></script>
-    <script src="../script/basic-object-models-IFS.js"></script>
-    <script>
-      var camera;
-      var canvas;
-      var frameNumber = 0;
-      var pyramid, cubeModel, cylinder, cone, torus, teapot;
-      function draw() {
-      var objectNumber = Number(document.getElementById("object").value);
-      glDisable(GL_LIGHTING);
-      glDisable(GL_DEPTH_TEST);
-      glDisable(GL_TEXTURE_2D);
-      glViewport(0,0,256,256);
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      glOrtho( 0,7,
-      -1,5,
-      -1,1 );
-      glMatrixMode(GL_MODELVIEW);
-      draw2DScene();
-      if (objectNumber == 6) {
-      return;
-      }
-      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 256, 256, 0);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glEnable(GL_LIGHTING);
-      glEnable(GL_DEPTH_TEST);
-      glEnable(GL_TEXTURE_2D);
-      glViewport(0,0,canvas.width,canvas.height);
-      camera.apply();
-      glClearColor( 0, 0, 0, 1 );
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      switch(objectNumber) {
-      case 0:
-      glRotatef(-90,1,0,0);
-      glScalef(1.5,1.5,1.5);
-      drawModel(pyramid);
-      break;
-      case 1:
-      glScalef(1.2,1.2,1.2);
-      drawModel(cubeModel);
-      break;
-      case 2:
-      glRotatef(-90,1,0,0);
-      glScalef(1.3,1.3,1.3);
-      drawModel(cylinder);
-      break;
-      case 3:
-      glRotatef(-90,1,0,0);
-      glScalef(1.3,1.3,1.3);
-      drawModel(cone);
-      break;
-      case 4:
-      glScalef(1.6,1.6,1.6);
-      drawModel(torus);
-      break;
-      case 5:
-      glScalef(0.06, 0.06, 0.06);
-      drawModel(teapot);
-      break;
-      }
-      }
-      function uvPyramid(baseWidth, height, slices, noBottom) {
-      baseWidth = baseWidth || 1;
-      height = height || 1;
-      slices = slices || 5;
-      var vertexCount = (slices + 1) * 4;
-      if (!noBottom) vertexCount += slices + 2;
-      var triangleCount = slices * 2 + (slices - 2) * 2;
-      if (!noBottom) triangleCount += slices;
-      var vertices = new Float32Array(vertexCount * 3);
-      var normals = new Float32Array(vertexCount * 3);
-      var texCoords = new Float32Array(vertexCount * 2);
-      var indices = new Uint16Array(triangleCount * 3);
-      var halfWidth = baseWidth / 2;
-      var du = (2 * Math.PI) / slices;
-      var kv = 0;
-      var kt = 0;
-      var k = 0;
-      var i, j, u;
-      for (i = 0; i < slices; i++) {
-      u = i * du;
-      var c = Math.cos(u);
-      var s = Math.sin(u);
-      vertices[kv] = halfWidth * c;
-      normals[kv++] = 0;
-      vertices[kv] = halfWidth * s;
-      normals[kv++] = 0;
-      vertices[kv] = -height / 2;
-      normals[kv++] = -1;
-      texCoords[kt++] = 0.5 * (c + 1);
-      texCoords[kt++] = 0.5 * (s + 1);
-      vertices[kv] = 0;
-      normals[kv++] = 0;
-      vertices[kv] = 0;
-      normals[kv++] = 0;
-      vertices[kv] = height / 2;
-      normals[kv++] = 1;
-      texCoords[kt++] = 0.5;
-      texCoords[kt++] = 0.5;
-      }
-      vertices[kv] = 0;
-      normals[kv++] = 0;
-      vertices[kv] = 0;
-      normals[kv++] = 0;
-      vertices[kv] = height / 2;
-      normals[kv++] = 1;
-      texCoords[kt++] = 0.5;
-      texCoords[kt++] = 0.5;
-      for (i = 0; i < slices; i++) {
-      indices[k++] = i * 2;
-      indices[k++] = i * 2 + 1;
-      indices[k++] = (i * 2 + 2) % (slices * 2);
-      indices[k++] = i * 2 + 1;
-      indices[k++] = (i * 2 + 3) % (slices * 2);
-      indices[k++] = (i * 2 + 2) % (slices * 2);
-      }
-      if (!noBottom) {
-      var startIndex = kv / 3;
-      vertices[kv] = 0;
-      normals[kv++] = 0;
-      vertices[kv] = 0;
-      normals[kv++] = 0;
-      vertices[kv] = -height / 2;
-      normals[kv++] = -1;
-      texCoords[kt++] = 0.5;
-      texCoords[kt++] = 0.5;
-      for (i = 0; i <= slices; i++) {
-      u = 2 * Math.PI - i * du;
-      var c = Math.cos(u);
-      var s = Math.sin(u);
-      vertices[kv] = c * halfWidth;
-      normals[kv++] = 0;
-      vertices[kv] = s * halfWidth;
-      normals[kv++] = 0;
-      vertices[kv] = -height / 2;
-      normals[kv++] = -1;
-      texCoords[kt++] = 0.5 - 0.5 * c;
-      texCoords[kt++] = 0.5 + 0.5 * s;
-      }
-      for (i = 0; i < slices; i++) {
-      indices[k++] = startIndex;
-      indices[k++] = startIndex + i + 1;
-      indices[k++] = startIndex + i + 2;
-      }
-      }
-      return {
-      vertexPositions: vertices,
-      vertexNormals: normals,
-      vertexTextureCoords: texCoords,
-      indices: indices
-      };
-      }
-      /**
-      * Draws a model using glDrawElements. The model data must be in the format produced by
-      * the functions in basic-object-models-IFS.js.
-      */
-      function drawModel(model) {
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer(3,GL_FLOAT,0,model.vertexPositions);
-      glEnableClientState(GL_NORMAL_ARRAY);
-      glNormalPointer(GL_FLOAT, 0, model.vertexNormals);
-      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      glTexCoordPointer(2,GL_FLOAT,0,model.vertexTextureCoords);
-      glDrawElements(GL_TRIANGLES, model.indices.length, GL_UNSIGNED_BYTE, model.indices);
-      glDisableClientState(GL_VERTEX_ARRAY);
-      glDisableClientState(GL_NORMAL_ARRAY);
-      glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-      }
-      function initGL() {
-      glEnable(GL_LIGHT0);
-      glEnable(GL_NORMALIZE);
-      var lightAmbient = [0.3, 0.3, 0.3, 1];
-      var lightDiffuse = [0.7, 0.7, 0.7, 1];
-      var lightPosition = [0, 1, 0, 0];
-      glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-      glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-      glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-      glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1, 1, 1, 1]);
-      }
-      //----------------- Drawing the 2D scene ----------------------------------------
-      function drawDisk(radius) {
-      var d;
-      glBegin(GL_POLYGON);
-      for (d = 0; d < 32; d++) {
-      var angle = 2*Math.PI/32 * d;
-      glVertex2d( radius*Math.cos(angle), radius*Math.sin(angle));
-      }
-      glEnd();
-      }
-      /*
-      * Draw a sun with radius 0.5 centered at (0,0). There are also 13 rays which
-      * extend outside from the sun for another 0.25 units.
-      */
-      function drawSun() {
-      var i;
-      glColor3f(1,1,0);
-      for (i = 0; i < 13; i++) { // Draw 13 rays, with different rotations.
-      glRotatef( 360 / 13, 0, 0, 1 ); // Note that the rotations accumulate!
-      glBegin(GL_LINES);
-      glVertex2f(0, 0);
-      glVertex2f(0.75, 0);
-      glEnd();
-      }
-      drawDisk(0.5);
-      glColor3f(0,0,0);
-      }
-      /* Draws the entire 2D scene.
-      */
-      function draw2DScene() {
-      // Background
-      glClearColor( 1.0, 0.8, 0.2, 1.0 );
-      glClear(GL_COLOR_BUFFER_BIT);
-      glLoadIdentity();
-      /* Draw three green triangles to form a ridge of hills in the background */
-      glColor3f(0, 0.6, 0.2);
-      glBegin(GL_POLYGON);
-      glVertex2f(-3,
-      -1);
-      glVertex2f(1.5,1.65);
-      glVertex2f(5,
-      -1);
-      glEnd();
-      glBegin(GL_POLYGON);
-      glVertex2f(-3,
-      -1);
-      glVertex2f(3,2.1);
-      glVertex2f(7,
-      -1);
-      glEnd();
-      glBegin(GL_POLYGON);
-      glVertex2f(0,
-      -1);
-      glVertex2f(6,1.2);
-      glVertex2f(20,
-      -1);
-      glEnd();
-      glBegin(GL_POLYGON);
-      glVertex2f(0,
-      -1);
-      glVertex2f(6,1.2);
-      glVertex2f(20,
-      -1);
-      glEnd();
-      // Clouds
-      glColor3f(1, 1, 1);
-      glColor3f(1, 1, 1);
-      glPushMatrix();
-      glTranslatef(3.7, 2.3, 0);
-      glScalef(0.3, 0.3, 0.3);
-      drawDisk(1);
-      glPopMatrix();
-      glPushMatrix();
-      glTranslatef(3.9, 2.4, 0);
-      glScalef(0.3, 0.3, 0.3);
-      drawDisk(1);
-      glPopMatrix();
-      glPushMatrix();
-      glTranslatef(4.1, 2.2, 0);
-      glScalef(0.3, 0.3, 0.3);
-      drawDisk(1);
-      glPopMatrix();
-      glPushMatrix();
-      glTranslatef(4.3, 2.4, 0);
-      glScalef(0.3, 0.3, 0.3);
-      drawDisk(1);
-      glPopMatrix();
-      glPushMatrix();
-      glTranslatef(4.5, 2.3, 0);
-      glScalef(0.3, 0.3, 0.3);
-      drawDisk(1);
-      glPopMatrix();
-      /* Draw the sun. The drawSun method draws the sun centered at (0,0). A 2D translation
-      * is applied to move the center of the sun to (5,3.3). A rotation makes it rotate*/
-      glPushMatrix();
-      glTranslated(5.8,3,0);
-      glRotated(-frameNumber*0.7,0,0,1);
-      drawSun();
-      glPopMatrix();
-      }
-      var animating = false;
-      function frame() {
-      if (animating) {
-      frameNumber++;
-      draw();
-      setTimeout(frame,30);
-      }
-      }
-      function doAnimate() {
-      animating = document.getElementById("animate").checked;
-      if (animating) {
-      frame();
-      }
-      }
-      function init() {
-      try {
-      canvas = document.getElementById("maincanvas");
-      glsimUse(canvas,null);
-      }
-      catch (e) {
-      document.getElementById("canvas-holder").innerHTML="<p><b>Sorry, an error
-      occurred:<br>" +
-      e + "</b></p>";
-      return;
-      }
-      initGL();
-      document.getElementById("object").value = "1";
-      document.getElementById("object").onchange = draw;
-      document.getElementById("animate").checked = false;
-      document.getElementById("animate").onchange = doAnimate;
-      camera = new Camera();
-      camera.setScale(1);
-      camera.lookAt(2,2,5, 0,0,0, 0,1,0);
-      camera.installTrackball(draw);
-      pyramid = uvPyramid();
-      cubeModel = cube();
-      cylinder = uvCylinder();
-      cone = uvCone();
-      torus = uvTorus();
-      pyramid = uvPyramid();
-      teapot = teapotModel;
-      draw();
-      }
-    </script>
-  </head>
-  <body onload="init()">
-    <div id="content">
-      <h3 id="headline">Drawing a Texture</h3>
-      <div id="canvas-holder">
-        <canvas id="maincanvas" width="400" height="350"></canvas>
-      </div>
-      <br clear="all" />
-      <p style="text-indent: 30px">
-        <b>Object</b>:
-        <select id="object">
-          <option value="0">Pyramid</option>
-          <option value="1">Cube</option>
-          <option value="2">Cylinder</option>
-          <option value="3">Cone</option>
-          <option value="4">Torus</option>
-          <option value="5">Teapot</option>
-          <option value="6">SHOW 2D SCENE</option>
-        </select>
-        <label
-          ><input
-            type="checkbox"
-            id="animate"
-            style="margin-
-left:30px"
-          /><b>Animate</b></label
-        >
-      </p>
-    </div>
-    <div id="helpBG" style="display: none"></div>
-  </body>
+<head>
+<meta charset="UTF-8">
+<title>CS 424 Lab 9</title>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115/build/three.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+
+"use strict";
+
+var canvas, renderer, scene, camera; // Standard three.js requirements.
+
+var controls;  // An OrbitControls object that is used to implement
+               // rotation of the scene using the mouse.  (It actually rotates
+               // the camera around the scene.)
+
+var animating = false;  // Set to true when an animation is in progress.
+var frameNumber = 0;  // Frame number is advanced by 1 for each frame while animating.
+
+var floor; 
+var pole1,pole2,pole3,pole4,pole5;
+var pivot1,pivot2,pivot3,pivot4,pivot5;
+var roof;
+var roof2;
+var k1,k2,k3,k4,k5,k6;
+/**
+ *  The render function draws the scene.
+ */
+function render() {
+    renderer.render(scene, camera);
+}
+
+
+/**
+ * This function is called by the init() method to create the world. 
+ */
+function createWorld() {
+    
+    renderer.setClearColor("white"); // Background color for scene.
+    scene = new THREE.Scene();
+    
+    camera = new THREE.PerspectiveCamera(30, canvas.width/canvas.height, 0.1, 100);
+    camera.position.z = 40;
+	camera.position.y = 20;
+    var light;  // A light shining from the direction of the camera; moves with the camera.
+    light = new THREE.DirectionalLight();
+    light.position.set(0,0,1);
+    camera.add(light);
+    scene.add(camera);
+    
+    //------------------- Create the scene's visible objects ----------------------
+	floor =  new THREE.Mesh(
+             new THREE.CylinderGeometry(13.5,13.5,0.6,7,1),
+             new THREE.MeshPhongMaterial({
+               color: 0x441c84,
+               specular: 0x222222,
+               shininess: 8,
+               shading: THREE.FlatShading
+            })
+    );
+    floor.rotation.y = Math.PI/12;
+    scene.add(floor);
+	
+    var geometry = new THREE.SphereGeometry( 3.7, 32, 32 );
+    var material = new THREE.MeshBasicMaterial( { map: new THREE.TextureLoader().load('resources/earth.jpg') });
+    var sphere = new THREE.Mesh(geometry, material);
+    sphere.position.y=3.8;
+    scene.add(sphere);
+	
+	pole1 =  new THREE.Mesh(
+             new THREE.CylinderGeometry(0.3,0.3,7.5,30,1),
+             new THREE.MeshPhongMaterial({
+               color: 0x7c5426,
+               specular: 0x222222,
+               shininess: 8,
+               shading: THREE.FlatShading
+            })
+    );
+    pole1.position.x=11.2;
+    pole1.position.y=3.9;
+    pole1.position.z=0.55;
+    pole1.rotation.y = Math.PI/12;
+    scene.add(pole1);
+
+	pole2 =  new THREE.Mesh(
+             new THREE.CylinderGeometry(0.3,0.3,7.5,30,1),
+             new THREE.MeshPhongMaterial({
+               color: 0x7c5426,
+               specular: 0x222222,
+               shininess: 8,
+               shading: THREE.FlatShading
+            })
+    );
+    pole2.position.x=-9.5;
+    pole2.position.y=3.9;
+    pole2.position.z=6.2;
+	pole2.rotation.y = Math.PI/12;
+	scene.add(pole2);
+
+	pole3 =  new THREE.Mesh(
+             new THREE.CylinderGeometry(0.3,0.3,7.5,30,1),
+             new THREE.MeshPhongMaterial({
+               color: 0x7c5426,
+               specular: 0x222222,
+               shininess: 8,
+               shading: THREE.FlatShading
+            })
+    );
+    pole3.position.x=2.95;
+    pole3.position.y=3.9;
+    pole3.position.z=11;
+	pole3.rotation.y = Math.PI/12;
+	scene.add(pole3);
+ 
+    pole4 =  new THREE.Mesh(
+             new THREE.CylinderGeometry(0.3,0.3,7.5,30,1),
+             new THREE.MeshPhongMaterial({
+               color: 0x7c5426,
+               specular: 0x222222,
+               shininess: 8,
+               shading: THREE.FlatShading
+            })
+    );
+    pole4.position.x=4;
+    pole4.position.y=3.9;
+    pole4.position.z=-10.5;
+	pole4.rotation.y = Math.PI/12;
+	scene.add(pole4);
+ 
+ 
+    pole5 =  new THREE.Mesh(
+             new THREE.CylinderGeometry(0.3,0.3,7.5,30,1),
+             new THREE.MeshPhongMaterial({
+               color: 0x7c5426,
+               specular: 0x222222,
+               shininess: 8,
+               shading: THREE.FlatShading
+            })
+    );
+    pole5.position.x=-8.7;
+    pole5.position.y=3.9;
+    pole5.position.z=-7.1;
+	pole5.rotation.y = Math.PI/12;
+	scene.add(pole5);
+		
+	roof =  new THREE.Mesh(
+            new THREE.CylinderGeometry(0.1,12,3,30,1),
+            new THREE.MeshPhongMaterial({
+               color: 0x441c84,
+               specular: 0x222222,
+               shininess: 8,
+               shading: THREE.FlatShading
+            })
+    );
+    roof.position.y=9.1;
+	scene.add(roof);
+		 
+	roof2 =  new THREE.Mesh(
+             new THREE.CylinderGeometry(12,12,0.3,200,1),
+             new THREE.MeshPhongMaterial({
+                color: 0x441c84,
+                specular: 0x222222,
+                shininess: 8,
+                shading: THREE.FlatShading
+             })
+    );
+    roof2.position.y=7.5;
+	  scene.add(roof2);
+	
+    var loader = new THREE.GLTFLoader();
+ 
+   var horse1 = loader.load( 'https://threejs.org/examples/models/gltf/Horse.glb', function ( gltf ) {
+				gltf.scene.scale.multiplyScalar( 0.03 );
+                gltf.scene.position.x = 11;
+                gltf.scene.position.z = 1;
+                gltf.scene.position.y = 1;
+                scene.add( gltf.scene );
+    });
+
+    var horse2 = loader.load( 'https://threejs.org/examples/models/gltf/Horse.glb', function ( gltf ) {
+				gltf.scene.scale.multiplyScalar( 0.03 );
+                gltf.scene.position.x =3;
+                gltf.scene.position.z = 11;
+                gltf.scene.position.y = 1;
+                gltf.scene.rotation.y = -1;
+                scene.add( gltf.scene );
+    });
+
+    var horse3 = loader.load( 'https://threejs.org/examples/models/gltf/Horse.glb', function ( gltf ) {
+
+				gltf.scene.scale.multiplyScalar( 0.03 );
+                gltf.scene.position.x =4;
+                gltf.scene.position.z = -10.5;
+                gltf.scene.position.y = 1;
+                gltf.scene.rotation.y = 1.2;
+                scene.add( gltf.scene );
+    });
+    var horse4 = loader.load( 'https://threejs.org/examples/models/gltf/Horse.glb', function ( gltf ) {
+				gltf.scene.scale.multiplyScalar( 0.03 );
+                gltf.scene.position.x =-10;
+                gltf.scene.position.z = 6;
+                gltf.scene.position.y = 1;
+                gltf.scene.rotation.y = -2.5;
+                scene.add( gltf.scene );
+    });
+    var horse5 = loader.load( 'https://threejs.org/examples/models/gltf/Horse.glb', function ( gltf ) {
+				gltf.scene.scale.multiplyScalar( 0.03 );
+                gltf.scene.position.x =-9;
+                gltf.scene.position.z = -7;
+                gltf.scene.position.y = 1;
+                gltf.scene.rotation.y = -3.5;
+                scene.add( gltf.scene );
+    });
+
+
+		
+	var box1 = new THREE.Box3().setFromObject(pole1,horse1);
+    var box2 = new THREE.Box3().setFromObject(pole2);
+    var box3 = new THREE.Box3().setFromObject(pole3);
+    var box4 = new THREE.Box3().setFromObject(pole4);
+    var box5 = new THREE.Box3().setFromObject(pole5);
+ 
+    box1.center( pole1.position );
+    box2.center( pole2.position );
+    box3.center( pole3.position );
+    box4.center( pole4.position );
+    box5.center( pole5.position );
+	
+	pivot1 = new THREE.Group();
+    pivot2 = new THREE.Group();
+    pivot3 = new THREE.Group();
+    pivot4 = new THREE.Group();
+    pivot5 = new THREE.Group();
+ 
+    scene.add(pivot1);
+    scene.add(pivot2);
+    scene.add(pivot3);
+    scene.add(pivot4);
+    scene.add(pivot5);
+		 
+ 
+    pivot1.add(pole1);
+    pivot2.add(pole2);
+    pivot3.add(pole3);
+    pivot4.add(pole4);
+    pivot5.add(pole5);
+	pivot3.add(horse1);
+
+} // end function createWorld()
+
+
+/**
+ *  This function is called once for each frame of the animation, before
+ *  the render() function is called for that frame.  It updates any
+ *  animated properties.  The value of the global variable frameNumber
+ *  is incrementd 1 before this function is called.
+ */
+function updateForFrame() {
+    
+    floor.rotation.y += 0.01;
+	roof.rotation.y += 0.01;
+	roof2.rotation.y += 0.01;
+	
+	pivot1.rotation.y += 0.01;
+    pivot2.rotation.y += 0.01;
+    pivot3.rotation.y += 0.01;
+    pivot4.rotation.y += 0.01;
+    pivot5.rotation.y += 0.01;
+    
+}
+
+
+/* ---------------------------- MOUSE AND ANIMATION SUPPORT ------------------
+
+/**
+ *  This page uses THREE.OrbitControls to let the user use the mouse to rotate
+ *  the view.  OrbitControls are designed to be used during an animation, where
+ *  the rotation is updated as part of preparing for the next frame.  The scene
+ *  is not automatically updated just because the user drags the mouse.  To get
+ *  the rotation to work without animation, I add another mouse listener to the
+ *  canvas, just to call the render() function when the user drags the mouse.
+ *  The same thing holds for touch events -- I call render for any mouse move
+ *  event with one touch.
+ */
+function installOrbitControls() {
+    controls = new THREE.OrbitControls(camera,canvas);
+    controls.noPan = true; 
+    controls.noZoom = true;
+    controls.staticMoving = true;
+    function move() {
+        controls.update();
+        if (! animating) {
+            render();
+        }
+    }
+    function down() {
+        document.addEventListener("mousemove", move, false);
+    }
+    function up() {
+        document.removeEventListener("mousemove", move, false);
+    }
+    function touch(event) {
+        if (event.touches.length == 1) {
+            move();
+        }
+    }
+    canvas.addEventListener("mousedown", down, false);
+    canvas.addEventListener("touchmove", touch, false);
+}
+
+/*  Called when user changes setting of the Animate checkbox. */
+function doAnimateCheckbox() {
+   var run = document.getElementById("animateCheckbox").checked;
+   if (run != animating) {
+       animating = run;
+       if (animating) {
+           requestAnimationFrame(doFrame);
+       }
+   }
+}
+
+/*  Drives the animation, called by system through requestAnimationFrame() */
+function doFrame() {
+    if (animating) {
+        frameNumber++;
+        updateForFrame();
+        render();
+        requestAnimationFrame(doFrame);
+    }
+}
+
+/*----------------------------- INITIALIZATION ----------------------------------------
+
+/**
+ *  This function is called by the onload event so it will run after the
+ *  page has loaded.  It creates the renderer, canvas, and scene objects,
+ *  calls createWorld() to add objects to the scene, and renders the
+ *  initial view of the scene.  If an error occurs, it is reported.
+ */
+function init() {
+    try {
+        canvas = document.getElementById("glcanvas");
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: false
+        });
+    }
+    catch (e) {
+        document.getElementById("message").innerHTML="<b>Sorry, an error occurred:<br>" +
+                e + "</b>";
+        return;
+    }
+    document.getElementById("animateCheckbox").checked = false;
+    document.getElementById("animateCheckbox").onchange = doAnimateCheckbox;
+    createWorld();
+    installOrbitControls();
+    render();
+}
+
+</script>
+</head>
+<body onload="init()">
+
+<h2>Three.js Modeling Demo: Merry-Go-Round</h2>
+
+<noscript>
+   <p style="color: #AA0000; font-weight: bold">Sorry, but this page requires JavaScript!</p>
+</noscript>
+
+<p style="color:#AA0000; font-weight: bold" id="message">
+</p>
+
+<p>
+   <label><input type="checkbox" id="animateCheckbox"><b>Animate</b></label>
+   <b style="margin-left:50px">Use the mouse to rotate the model.</b>
+</p>
+
+<div id="canvas-holder" style="float:left; border: thin solid black; background-color: white">
+   <canvas width=1200 height=600 id="glcanvas"></canvas>
+</div>
+
+</body>
 </html>
